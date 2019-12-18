@@ -22,10 +22,17 @@ class MapResolver implements AttributeResolver {
       String filename,
       int lineNumber) {
     Map<?, ?> object = (Map<?, ?>) instance;
+    if(context.isStrictVariables() && !object.containsKey(key)) {
+      throw new AttributeNotFoundException(null, String.format(
+          "Attribute [%s] of [%s] does not exist or can not be accessed and strict variables is set to true.",
+          attributeNameValue.toString(), object.getClass().getName()),
+          attributeNameValue.toString(), lineNumber, filename);
+    }
+
     if (object.isEmpty()) {
       return new ResolvedAttribute(null);
     }
-
+    
     Object key;
     if (attributeNameValue != null && Number.class
         .isAssignableFrom(attributeNameValue.getClass())) {
@@ -36,14 +43,6 @@ class MapResolver implements AttributeResolver {
     } else {
       key = attributeNameValue;
     }
-
-    if(context.isStrictVariables() && !object.containsKey(key)) {
-      throw new AttributeNotFoundException(null, String.format(
-          "Attribute [%s] of [%s] does not exist or can not be accessed and strict variables is set to true.",
-          attributeNameValue.toString(), object.getClass().getName()),
-          attributeNameValue.toString(), lineNumber, filename);
-    }
-
     ResolvedAttribute resolvedAttribute = new ResolvedAttribute(object.get(key));
     return resolvedAttribute;
   }
